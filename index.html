@@ -114,14 +114,24 @@
     // ⚠️ 重要：請在這裡放入您部署好 GAS 後取得的「網頁應用程式網址」
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyc1ZyZHbk2IWDwrtLthl82h9DmVsh1hY3e5iWmDEtESF3QZ_ySM6dJN-g3gct3QB2evg/exec";
 
-    // 初始化下拉選單 1 到 30 組
-    const groupSelect = document.getElementById('group-select');
-    for (let i = 1; i <= 30; i++) {
-      let opt = document.createElement('option');
-      opt.value = `第 ${i} 組`;
-      opt.textContent = `第 ${i} 組`;
-      groupSelect.appendChild(opt);
-    }
+    // 初始化下拉選單：乾道 1-15 組 與 坤道 1-15 組
+const groupSelect = document.getElementById('group-select');
+
+// 產生乾道 1 到 15 組
+for (let i = 1; i <= 15; i++) {
+  let opt = document.createElement('option');
+  opt.value = `乾道第 ${i} 組`;
+  opt.textContent = `乾道第 ${i} 組`;
+  groupSelect.appendChild(opt);
+}
+
+// 產生坤道 1 到 15 組
+for (let j = 1; j <= 15; j++) {
+  let opt = document.createElement('option');
+  opt.value = `坤道第 ${j} 組`;
+  opt.textContent = `坤道第 ${j} 組`;
+  groupSelect.appendChild(opt);
+}
 
     // 頁籤切換邏輯
     function switchTab(target) {
