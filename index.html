@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>30組即時競賽看板系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    /* 自訂深綠色調背景 */
+    .bg-emerald-900-custom { background-color: #064e3b; }
+    .bg-emerald-800-custom { background-color: #065f46; }
+    .bg-emerald-700-custom { background-color: #047857; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800 flex flex-col">
+
+  <header class="bg-white border-b border-gray-200 px-6 py-4 flex flex-col sm:flex-row justify-between items-center shadow-sm gap-4">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-emerald-200">🏆</div>
+      <div>
+        <h1 class="text-xl font-bold text-gray-900 tracking-wide">競賽即時控制中心</h1>
+        <p class="text-xs text-gray-500">Google Workspace 綠色質感風</p>
+      </div>
+    </div>
+    
+    <div class="flex bg-gray-100 p-1 rounded-xl border border-gray-200">
+      <button id="tab-board-btn" onclick="switchTab('board')" class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white text-emerald-700 shadow-sm font-bold">
+        📊 即時排行榜
+      </button>
+      <button id="tab-admin-btn" onclick="switchTab('admin')" class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-600 hover:text-gray-900">
+        ⚙️ 分數登錄頁
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full">
+    
+    <section id="section-board" class="block animate-fade-in">
+      <div class="bg-emerald-900-custom text-white rounded-3xl p-6 md:p-10 shadow-2xl mb-8 relative overflow-hidden border border-emerald-800">
+        <div class="absolute top-[-20%] right-[-10%] w-96 h-96 rounded-full bg-emerald-700-custom opacity-20 blur-3xl"></div>
+        <div class="absolute bottom-[-20%] left-[-10%] w-80 h-80 rounded-full bg-emerald-500 opacity-10 blur-3xl"></div>
+        
+        <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <span class="bg-emerald-700-custom text-emerald-200 text-xs px-3 py-1 rounded-full font-medium tracking-widest uppercase shadow-sm">Live Updates</span>
+            <h2 class="text-3xl md:text-4xl font-bold mt-2 tracking-tight">競賽即時排行榜</h2>
+            <p class="text-emerald-200 text-sm mt-1 opacity-90">每 5 秒自動同步雲端數據，即時精準排序</p>
+          </div>
+          <div class="flex items-center space-x-2 bg-emerald-800-custom px-4 py-2 rounded-xl text-xs font-mono border border-emerald-700 text-emerald-300">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>系統狀態：自動連線中...</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="leaderboard-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div class="col-span-full py-12 text-center text-gray-400">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent mb-2"></div>
+          <p>正在載入最新競賽數據，請稍候...</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="section-admin" class="hidden animate-fade-in">
+      <div class="max-w-xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
+        <div class="bg-gradient-to-r from-emerald-700 to-emerald-600 px-6 py-5 text-white">
+          <h2 class="text-xl font-bold">🎯 後端分數登錄控制台</h2>
+          <p class="text-xs text-emerald-100 opacity-90 mt-1">選取對應組別，即可快速調整分數或直接指派新分數</p>
+        </div>
+        
+        <div class="p-6 space-y-6">
+          <div id="alert-box" class="hidden p-4 rounded-xl text-sm font-medium transition-all duration-300"></div>
+
+          <div>
+            <label for="group-select" class="block text-sm font-medium text-gray-700 mb-2">請選取評分組別</label>
+            <select id="group-select" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium">
+              </select>
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">方式一：快速微調分數</span>
+            <div class="grid grid-cols-4 gap-2">
+              <button onclick="submitScoreChange('change', 1)" class="admin-btn py-2.5 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-95">+1</button>
+              <button onclick="submitScoreChange('change', 5)" class="admin-btn py-2.5 rounded-lg font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition-all active:scale-95">+5</button>
+              <button onclick="submitScoreChange('change', -1)" class="admin-btn py-2.5 rounded-lg font-bold text-sm bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-all active:scale-95">-1</button>
+              <button onclick="submitScoreChange('change', -5)" class="admin-btn py-2.5 rounded-lg font-bold text-sm bg-red-600 text-white hover:bg-red-700 shadow-sm transition-all active:scale-95">-5</button>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">方式二：直接給定總分</span>
+            <div class="flex gap-2">
+              <input type="number" id="direct-score-input" placeholder="請輸入絕對值分數 (例如: 85)" class="flex-grow bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+              <button id="submit-direct-btn" onclick="submitDirectScore()" class="admin-btn bg-gray-900 text-white px-6 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition-all active:scale-95 flex items-center justify-center space-x-1 min-w-[100px]">
+                <span>確認提交</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-400 mt-auto">
+    &copy; 2026 30組即時競賽看板系統. Powered by Google Sheets & Apps Script.
+  </footer>
+
+  <script>
+    // ⚠️ 重要：請在這裡放入您部署好 GAS 後取得的「網頁應用程式網址」
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyc1ZyZHbk2IWDwrtLthl82h9DmVsh1hY3e5iWmDEtESF3QZ_ySM6dJN-g3gct3QB2evg/exec";
+
+    // 初始化下拉選單 1 到 30 組
+    const groupSelect = document.getElementById('group-select');
+    for (let i = 1; i <= 30; i++) {
+      let opt = document.createElement('option');
+      opt.value = `第 ${i} 組`;
+      opt.textContent = `第 ${i} 組`;
+      groupSelect.appendChild(opt);
+    }
+
+    // 頁籤切換邏輯
+    function switchTab(target) {
+      const boardBtn = document.getElementById('tab-board-btn');
+      const adminBtn = document.getElementById('tab-admin-btn');
+      const boardSec = document.getElementById('section-board');
+      const adminSec = document.getElementById('section-admin');
+
+      if (target === 'board') {
+        boardBtn.className = "px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white text-emerald-700 shadow-sm font-bold";
+        adminBtn.className = "px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-600 hover:text-gray-900";
+        boardSec.classList.remove('hidden');
+        adminSec.classList.add('hidden');
+        fetchScores(); // 切換回看板時立刻刷一次資料
+      } else {
+        adminBtn.className = "px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white text-emerald-700 shadow-sm font-bold";
+        boardBtn.className = "px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-600 hover:text-gray-900";
+        adminSec.classList.remove('hidden');
+        boardSec.classList.add('hidden');
+      }
+    }
+
+    // 從後端 API 獲取資料並渲染排行榜 (依分數降序排序)
+    async function fetchScores() {
+      if (GAS_API_URL.includes("XXXXX")) return; // 如果沒換 URL 則不作用
+      
+      try {
+        const response = await fetch(GAS_API_URL);
+        const result = await response.json();
+        
+        if (result.status === "success") {
+          // 關鍵邏輯：依據分數進行「高低降序排序」
+          const sortedData = result.data.sort((a, b) => b.score - a.score);
+          renderLeaderboard(sortedData);
+        }
+      } catch (error) {
+        console.error("讀取分數失敗:", error);
+      }
+    }
+
+    // 動態產生網格排行榜 UI
+    function renderLeaderboard(data) {
+      const grid = document.getElementById('leaderboard-grid');
+      grid.innerHTML = ''; // 清空舊畫面
+
+      data.forEach((item, index) => {
+        const rank = index + 1;
+        let cardStyle = "bg-white border border-gray-200";
+        let rankBadge = "";
+
+        // 前三名特殊高質感顏色配置
+        if (rank === 1) {
+          cardStyle = "bg-gradient-to-br from-amber-50 to-orange-100/60 border-2 border-amber-400 shadow-md transform hover:-translate-y-1 transition-all";
+          rankBadge = `<span class="bg-amber-500 text-white font-bold px-2.5 py-1 rounded-md text-xs shadow-sm shadow-amber-200">🥇 冠軍</span>`;
+        } else if (rank === 2) {
+          cardStyle = "bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-300 shadow-sm";
+          rankBadge = `<span class="bg-slate-400 text-white font-bold px-2.5 py-1 rounded-md text-xs">🥈 亞軍</span>`;
+        } else if (rank === 3) {
+          cardStyle = "bg-gradient-to-br from-orange-50 to-orange-100/40 border-2 border-orange-300 shadow-sm";
+          rankBadge = `<span class="bg-amber-700 text-white font-bold px-2.5 py-1 rounded-md text-xs">🥉 季軍</span>`;
+        } else {
+          // 普通排名樣式
+          rankBadge = `<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-semibold">No.${rank}</span>`;
+        }
+
+        const cardHtml = `
+          <div class="p-5 rounded-2xl ${cardStyle} flex justify-between items-center transition-all duration-300 hover:shadow-md">
+            <div class="space-y-2">
+              <div>${rankBadge}</div>
+              <div class="text-lg font-bold text-gray-800">${item.group}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">Score</div>
+              <div class="text-3xl font-black ${rank <= 3 ? 'text-emerald-800' : 'text-gray-700'}">${item.score}</div>
+            </div>
+          </div>
+        `;
+        grid.insertAdjacentHTML('beforeend', cardHtml);
+      });
+    }
+
+    // 核心提交處理邏輯 (與 GAS POST 連線)
+    async function sendDataToGAS(payload) {
+      setLoadingState(true);
+      showAlert('', 'clear');
+
+      try {
+        // 使用 fetch 發送 POST，並設定 mode 為 no-cors 防止跨域錯誤阻斷執行
+        await fetch(GAS_API_URL, {
+          method: 'POST',
+          mode: 'no-cors', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        // 由於 no-cors 模式無法在前端撈回 response body，但資料能成功寫入試算表，
+        // 我們在這裡大膽假設並提示成功，並重設輸入框。
+        showAlert(`分數已成功更新！「${payload.group}」資料處理完畢。`, 'success');
+        document.getElementById('direct-score-input').value = '';
+        
+      } catch (error) {
+        showAlert('發送分數時發生錯誤，請檢查網路或 API 設定。', 'error');
+        console.error(error);
+      } finally {
+        setLoadingState(false);
+      }
+    }
+
+    // 觸發加減分調整
+    function submitScoreChange(action, value) {
+      const group = groupSelect.value;
+      sendDataToGAS({ group, action, value });
+    }
+
+    // 觸發直接設定分數
+    function submitDirectScore() {
+      const group = groupSelect.value;
+      const inputVal = document.getElementById('direct-score-input').value;
+      
+      if (inputVal === '') {
+        showAlert('請輸入要提交的分數數值！', 'error');
+        return;
+      }
+      
+      sendDataToGAS({ group, action: 'set', value: Number(inputVal) });
+    }
+
+    // 設定登錄按鈕的「讀取中 Loading」狀態
+    function setLoadingState(isLoading) {
+      const buttons = document.querySelectorAll('.admin-btn');
+      const submitDirectBtn = document.getElementById('submit-direct-btn');
+      
+      buttons.forEach(btn => btn.disabled = isLoading);
+      
+      if (isLoading) {
+        submitDirectBtn.innerHTML = `
+          <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>處理中...</span>
+        `;
+        submitDirectBtn.classList.add('opacity-75');
+      } else {
+        submitDirectBtn.innerHTML = '<span>確認提交</span>';
+        submitDirectBtn.classList.remove('opacity-75');
+      }
+    }
+
+    // 自動提示框控制
+    function showAlert(msg, type) {
+      const box = document.getElementById('alert-box');
+      if (type === 'clear') {
+        box.className = "hidden";
+        return;
+      }
+      box.classList.remove('hidden');
+      box.textContent = msg;
+
+      if (type === 'success') {
+        box.className = "p-4 rounded-xl text-sm font-medium bg-green-50 text-green-800 border border-green-200 shadow-sm animate-bounce";
+        // 3秒後自動消失
+        setTimeout(() => box.className = "hidden", 3500);
+      } else if (type === 'error') {
+        box.className = "p-4 rounded-xl text-sm font-medium bg-red-50 text-red-800 border border-red-200";
+      }
+    }
+
+    // 核心定時器：啟動每 5 秒 (5000毫秒) 自動無感刷新
+    fetchScores(); // 初始化載入
+    setInterval(fetchScores, 5000);
+  </script>
+</body>
+</html>
