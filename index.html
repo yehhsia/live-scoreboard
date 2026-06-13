@@ -30,7 +30,7 @@
         <p class="text-emerald-200 text-sm mt-1">每 5 秒自動同步雲端數據</p>
       </div>
       <div id="leaderboard-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <div class="col-span-full py-12 text-center text-gray-400">載入中...</div>
+        <div class="col-span-full py-12 text-center text-gray-400">連線資料庫中...</div>
       </div>
     </section>
 
@@ -65,7 +65,7 @@
   </main>
 
   <script>
-    // ⚠️ 核心：請把下面這行引號內的網址，換成你剛剛在第一步複製的 GAS 網址
+    // 自動帶入你最新發布的完整 GAS 網址
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyc1ZyZHbk2IWDwrtLthl82h9DmVsh1hY3e5iWmDEtESF3QZ_ySM6dJN-g3gct3QB2evg/exec";
 
     const groupSelect = document.getElementById('group-select');
@@ -93,7 +93,6 @@
     }
 
     async function fetchScores() {
-      if (GAS_API_URL.includes("請把")) return;
       try {
         const response = await fetch(GAS_API_URL);
         const result = await response.json();
